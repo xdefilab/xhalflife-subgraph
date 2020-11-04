@@ -1,0 +1,6 @@
+kovan:
+  contracts:
+    XhalfLife:
+      address: "0x97721b4c8BF7AEDf936AF11D18e2f1eF5AF4836B"
+      startBlock: 21537700
+  networkName: kovan

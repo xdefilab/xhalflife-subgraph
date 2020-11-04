@@ -1,4 +1,4 @@
-specVersion: 0.0.1
+specVersion: 0.0.2
 description: XHalfLife-SubGraph
 repository: https://github.com/xdefilab/xhalflife-subgraph
 schema:
@@ -13,7 +13,7 @@ dataSources:
       startBlock: 21537700
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.2
+      apiVersion: 0.0.4
       language: wasm/assemblyscript
       entities:
         - StreamCanceled
