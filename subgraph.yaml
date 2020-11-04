@@ -1,0 +1,35 @@
+specVersion: 0.0.1
+description: XHalfLife-SubGraph
+repository: https://github.com/xdefilab/xhalflife-subgraph
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: Contract
+    network: kovan
+    source:
+      address: "0x97721b4c8BF7AEDf936AF11D18e2f1eF5AF4836B"
+      abi: Contract
+      startBlock: 21537700
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.2
+      language: wasm/assemblyscript
+      entities:
+        - StreamCanceled
+        - StreamCreated
+        - StreamFunded
+        - WithdrawFromStream
+      abis:
+        - name: Contract
+          file: ./abis/Contract.json
+      eventHandlers:
+        - event: StreamCanceled(indexed uint256,indexed address,indexed address,uint256,uint256)
+          handler: handleStreamCanceled
+        - event: StreamCreated(indexed uint256,indexed address,indexed address,uint256,uint256,uint256,uint256)
+          handler: handleStreamCreated
+        - event: StreamFunded(indexed uint256,uint256)
+          handler: handleStreamFunded
+        - event: WithdrawFromStream(indexed uint256,indexed address,uint256)
+          handler: handleWithdrawFromStream
+      file: ./src/mapping.ts

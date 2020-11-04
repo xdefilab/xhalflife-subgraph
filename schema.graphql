@@ -1,0 +1,64 @@
+
+type Token @entity {
+  id: ID!
+  decimals: Int
+  name: String
+  symbol: String
+}
+
+type StreamTransaction @entity {
+  id: ID!
+  block: Int!
+  event: String!
+  from: Bytes!
+  stream: Stream!
+  timestamp: BigInt!
+  to: Bytes
+  txhash: String!
+}
+
+# The id is the stream's id
+type Cancellation @entity {
+  id: ID!
+  recipientBalance: BigInt!
+  senderBalance: BigInt!
+  timestamp: BigInt!
+  token: Token
+  txhash: String!
+}
+
+# @derivedFrom makes it possible to map large sets of data to the same stream
+type Stream @entity {
+  id: ID!
+  cancellation: Cancellation
+  depositAmount: BigInt!
+  recipient: Bytes!
+  sender: Bytes!
+  startBlock: BigInt!
+  kBlock: BigInt!
+  unlockRatio: BigInt!
+  timestamp: BigInt!
+  token: Token
+  # Do not turn these arrays into forcibly non-null by adding a "!"
+  # The indexing would fail with an error:
+  # > field is derived and can not be set wasm backtrace
+  txs: [StreamTransaction!] @derivedFrom(field: "stream")
+  withdrawals: [Withdrawal!] @derivedFrom(field: "stream")
+  funds: [Fund!] @derivedFrom(field: "stream")
+}
+
+type Withdrawal @entity {
+  id: ID!
+  amount: BigInt!
+  stream: Stream!
+  timestamp: BigInt!
+  token: Token
+}
+
+type Fund @entity {
+  id: ID!
+  amount: BigInt!
+  stream: Stream!
+  timestamp: BigInt!
+  token: Token
+}
