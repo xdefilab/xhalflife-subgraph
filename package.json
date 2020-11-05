@@ -1,6 +1,6 @@
 {
     "name": "xhalflifesubgraph",
-    "license": "UNLICENSED",
+    "license": "LGPL-3.0",
     "scripts": {
         "codegen": "graph codegen",
         "build": "graph build",
@@ -10,7 +10,7 @@
         "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 xdefilab/xhalflifekovan"
     },
     "dependencies": {
-        "@graphprotocol/graph-cli": "0.18.0",
-        "@graphprotocol/graph-ts": "0.18.0"
+        "@graphprotocol/graph-cli": "0.16.2",
+        "@graphprotocol/graph-ts": "0.16.0"
     }
 }

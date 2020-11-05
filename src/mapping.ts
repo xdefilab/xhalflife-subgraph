@@ -21,12 +21,12 @@ export function handleStreamCreated(event: StreamCreated): void {
     stream.kBlock = event.params.kBlock;
     stream.unlockRatio = event.params.unlockRatio;
     stream.timestamp = event.block.timestamp;
-    stream.token = event.params.tokenAddress.toHex();
+    //stream.token = event.params.tokenAddress.toHex();
     stream.save();
 
     /* Create adjacent but important objects */
     addStreamTransaction("CreateStream", event, streamId);
-    addToken(event.params.tokenAddress.toHex());
+    //addToken(event.params.tokenAddress.toHex());
 }
 
 export function handleStreamFunded(event: StreamFunded): void {
