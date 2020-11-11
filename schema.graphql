@@ -11,6 +11,7 @@ type StreamTransaction @entity {
   block: Int!
   event: String!
   from: Bytes!
+  streamId: String!
   stream: Stream!
   timestamp: BigInt!
   to: Bytes

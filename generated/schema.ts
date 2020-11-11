@@ -143,6 +143,15 @@ export class StreamTransaction extends Entity {
     this.set("from", Value.fromBytes(value));
   }
 
+  get streamId(): string {
+    let value = this.get("streamId");
+    return value.toString();
+  }
+
+  set streamId(value: string) {
+    this.set("streamId", Value.fromString(value));
+  }
+
   get stream(): string {
     let value = this.get("stream");
     return value.toString();
