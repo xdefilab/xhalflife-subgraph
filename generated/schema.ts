@@ -600,3 +600,61 @@ export class Fund extends Entity {
     }
   }
 }
+
+export class StreamTotalData extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id !== null, "Cannot save StreamTotalData entity without an ID");
+    assert(
+      id.kind == ValueKind.STRING,
+      "Cannot save StreamTotalData entity with non-string ID. " +
+        'Considering using .toHex() to convert the "id" to a string.'
+    );
+    store.set("StreamTotalData", id.toString(), this);
+  }
+
+  static load(id: string): StreamTotalData | null {
+    return store.get("StreamTotalData", id) as StreamTotalData | null;
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get totalCount(): BigInt {
+    let value = this.get("totalCount");
+    return value.toBigInt();
+  }
+
+  set totalCount(value: BigInt) {
+    this.set("totalCount", Value.fromBigInt(value));
+  }
+
+  get xdexLocked(): BigInt {
+    let value = this.get("xdexLocked");
+    return value.toBigInt();
+  }
+
+  set xdexLocked(value: BigInt) {
+    this.set("xdexLocked", Value.fromBigInt(value));
+  }
+
+  get xdexWithdrawed(): BigInt {
+    let value = this.get("xdexWithdrawed");
+    return value.toBigInt();
+  }
+
+  set xdexWithdrawed(value: BigInt) {
+    this.set("xdexWithdrawed", Value.fromBigInt(value));
+  }
+}

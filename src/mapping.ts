@@ -6,9 +6,11 @@ import {
     StreamFunded,
     WithdrawFromStream
 } from "../generated/Contract/Contract"
-import { Cancellation, Stream, Withdrawal, Fund } from "../generated/schema"
+import { Cancellation, Stream, Withdrawal, Fund, StreamTotalData } from "../generated/schema"
 import { addStreamTransaction } from "./transactions";
 import { addToken } from "./tokens";
+
+const StreamTotalDataId = "0";
 
 export function handleStreamCreated(event: StreamCreated): void {
     /* Create the stream object */
@@ -23,6 +25,18 @@ export function handleStreamCreated(event: StreamCreated): void {
     stream.timestamp = event.block.timestamp;
     //stream.token = event.params.tokenAddress.toHex();
     stream.save();
+
+    //update total stat
+    let data = StreamTotalData.load(StreamTotalDataId);
+    if (data === null) {
+        data = new StreamTotalData(StreamTotalDataId);
+        data.totalCount = event.params.streamId;
+        data.xdexLocked = BigInt.fromI32(0);
+        data.xdexWithdrawed = BigInt.fromI32(0);
+    }
+    data.totalCount = event.params.streamId;
+    data.xdexLocked = data.xdexLocked.plus(event.params.depositAmount);
+    data.save();
 
     /* Create adjacent but important objects */
     addStreamTransaction("CreateStream", event, streamId);
@@ -43,6 +57,17 @@ export function handleStreamFunded(event: StreamFunded): void {
     fund.token = stream.token;
     fund.save();
 
+    //update total stat
+    let data = StreamTotalData.load(StreamTotalDataId);
+    if (data === null) {
+        data = new StreamTotalData(StreamTotalDataId);
+        data.totalCount = event.params.streamId;
+        data.xdexLocked = BigInt.fromI32(0);
+        data.xdexWithdrawed = BigInt.fromI32(0);
+    }
+    data.xdexLocked = data.xdexLocked.plus(event.params.amount);
+    data.save();
+
     addStreamTransaction("FundStream", event, streamId);
 }
 
@@ -59,6 +84,20 @@ export function handleWithdrawFromStream(event: WithdrawFromStream): void {
     withdrawal.timestamp = event.block.timestamp;
     withdrawal.token = stream.token;
     withdrawal.save();
+
+    //update total stat
+    let data = StreamTotalData.load(StreamTotalDataId);
+    if (data === null) {
+        data = new StreamTotalData(StreamTotalDataId);
+        data.totalCount = event.params.streamId;
+        data.xdexLocked = BigInt.fromI32(0);
+        data.xdexWithdrawed = BigInt.fromI32(0);
+    }
+    if (data.xdexLocked >= event.params.amount) {
+        data.xdexLocked = data.xdexLocked.minus(event.params.amount);
+    }
+    data.xdexWithdrawed = data.xdexWithdrawed.plus(event.params.amount);
+    data.save();
 
     addStreamTransaction("WithdrawFromStream", event, streamId);
 }
@@ -80,6 +119,21 @@ export function handleStreamCanceled(event: StreamCanceled): void {
 
     stream.cancellation = streamId;
     stream.save();
+
+    //update total stat
+    let data = StreamTotalData.load(StreamTotalDataId);
+    if (data === null) {
+        data = new StreamTotalData(StreamTotalDataId);
+        data.totalCount = event.params.streamId;
+        data.xdexLocked = BigInt.fromI32(0);
+        data.xdexWithdrawed = BigInt.fromI32(0);
+    } else {
+        if (data.xdexLocked >= event.params.senderBalance) {
+            data.xdexLocked = data.xdexLocked.minus(event.params.senderBalance);
+        }
+        data.xdexWithdrawed = data.xdexWithdrawed.plus(event.params.recipientBalance);
+    }
+    data.save();
 
     addStreamTransaction("CancelStream", event, streamId);
 }
