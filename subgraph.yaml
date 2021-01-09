@@ -8,9 +8,9 @@ dataSources:
     name: Contract
     network: kovan
     source:
-      address: "0x97721b4c8BF7AEDf936AF11D18e2f1eF5AF4836B"
+      address: "0x156e40baf4c06dfb536307340be8521ed8b748cd"
       abi: Contract
-      startBlock: 21537700
+      startBlock: 22920124
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -22,14 +22,20 @@ dataSources:
         - WithdrawFromStream
       abis:
         - name: Contract
-          file: ./abis/Contract.json
+          file: ./abis/XHalfLife.json
+        - name: ERC20
+          file: ./abis/ERC20.json
+        - name: ERC20SymbolBytes
+          file: ./abis/ERC20SymbolBytes.json
+        - name: ERC20NameBytes
+          file: ./abis/ERC20NameBytes.json
       eventHandlers:
         - event: StreamCanceled(indexed uint256,indexed address,indexed address,uint256,uint256)
           handler: handleStreamCanceled
-        - event: StreamCreated(indexed uint256,indexed address,indexed address,uint256,uint256,uint256,uint256)
+        - event: StreamCreated(indexed uint256,indexed address,indexed address,address,uint256,uint256,uint256,uint256)
           handler: handleStreamCreated
         - event: StreamFunded(indexed uint256,uint256)
           handler: handleStreamFunded
         - event: WithdrawFromStream(indexed uint256,indexed address,uint256)
           handler: handleWithdrawFromStream
-      file: ./src/mapping.ts
+      file: ./src/mappings/core.ts
