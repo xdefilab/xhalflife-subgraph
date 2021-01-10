@@ -1,8 +1,8 @@
-import { EthereumEvent } from "@graphprotocol/graph-ts";
+import { ethereum } from "@graphprotocol/graph-ts/index";
 
-import { StreamTransaction } from "../generated/schema";
+import { StreamTransaction } from "../types/schema";
 
-export function addStreamTransaction(name: string, event: EthereumEvent, streamId: string): void {
+export function addStreamTransaction(name: string, event: ethereum.Event, streamId: string): void {
     let streamTransaction = new StreamTransaction(event.transaction.hash.toHex() + "-" + event.logIndex.toString());
     streamTransaction.event = name;
     streamTransaction.block = event.block.number.toI32();

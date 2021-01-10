@@ -1,18 +1,19 @@
-import { BigInt } from "@graphprotocol/graph-ts"
+import {BigInt, BigDecimal, Address} from "@graphprotocol/graph-ts/index"
 import {
     Contract,
     StreamCanceled,
     StreamCreated,
     StreamFunded,
     WithdrawFromStream
-} from "../generated/Contract/Contract"
-import { Cancellation, Stream, Withdrawal, Fund, StreamTotalData } from "../generated/schema"
-import { addStreamTransaction } from "./transactions";
-import { addToken } from "./tokens";
-
-const StreamTotalDataId = "0";
+} from "../types/Contract/Contract"
+import {Cancellation, Stream, Withdrawal, Fund, StreamTotalData} from "../types/schema"
+import {addStreamTransaction} from "./transactions";
+import {createToken, ZERO_BD, ZERO_BI, ONE_BI, convertTokenToDecimal} from "./helpers";
 
 export function handleStreamCreated(event: StreamCreated): void {
+
+    let token = createToken(event.params.token);
+
     /* Create the stream object */
     let streamId = event.params.streamId.toString();
     let stream = new Stream(streamId);
@@ -23,19 +24,21 @@ export function handleStreamCreated(event: StreamCreated): void {
     stream.kBlock = event.params.kBlock;
     stream.unlockRatio = event.params.unlockRatio;
     stream.timestamp = event.block.timestamp;
-    //stream.token = event.params.tokenAddress.toHex();
+    stream.token = event.params.token.toHexString();
     stream.save();
 
     //update total stat
+    let StreamTotalDataId = event.params.token.toHexString();
     let data = StreamTotalData.load(StreamTotalDataId);
     if (data === null) {
         data = new StreamTotalData(StreamTotalDataId);
-        data.totalCount = event.params.streamId;
-        data.xdexLocked = BigInt.fromI32(0);
-        data.xdexWithdrawed = BigInt.fromI32(0);
+        data.count = ONE_BI;
+        data.locked = ZERO_BD;
+        data.withdrawed = ZERO_BD;
+        data.token = token.id;
     }
-    data.totalCount = event.params.streamId;
-    data.xdexLocked = data.xdexLocked.plus(event.params.depositAmount);
+    data.count = data.count.plus(ONE_BI);
+    data.locked = data.locked.plus(convertTokenToDecimal(event.params.depositAmount, token.decimals));
     data.save();
 
     /* Create adjacent but important objects */
@@ -50,6 +53,8 @@ export function handleStreamFunded(event: StreamFunded): void {
         return;
     }
 
+    let token = createToken(Address.fromString(stream.token));
+
     let fund = new Fund(event.transaction.hash.toHex() + "-" + event.logIndex.toString());
     fund.amount = event.params.amount;
     fund.stream = streamId;
@@ -58,14 +63,16 @@ export function handleStreamFunded(event: StreamFunded): void {
     fund.save();
 
     //update total stat
+    let StreamTotalDataId = stream.token;
     let data = StreamTotalData.load(StreamTotalDataId);
     if (data === null) {
         data = new StreamTotalData(StreamTotalDataId);
-        data.totalCount = event.params.streamId;
-        data.xdexLocked = BigInt.fromI32(0);
-        data.xdexWithdrawed = BigInt.fromI32(0);
+        data.count = ONE_BI;
+        data.locked = ZERO_BD;
+        data.withdrawed = ZERO_BD;
+        data.token = token.id;
     }
-    data.xdexLocked = data.xdexLocked.plus(event.params.amount);
+    data.locked = data.locked.plus(convertTokenToDecimal(event.params.amount, token.decimals));
     data.save();
 
     addStreamTransaction("FundStream", event, streamId);
@@ -85,18 +92,13 @@ export function handleWithdrawFromStream(event: WithdrawFromStream): void {
     withdrawal.token = stream.token;
     withdrawal.save();
 
+    let token = createToken(Address.fromString(stream.token));
     //update total stat
+    let StreamTotalDataId = stream.token;
     let data = StreamTotalData.load(StreamTotalDataId);
-    if (data === null) {
-        data = new StreamTotalData(StreamTotalDataId);
-        data.totalCount = event.params.streamId;
-        data.xdexLocked = BigInt.fromI32(0);
-        data.xdexWithdrawed = BigInt.fromI32(0);
-    }
-    if (data.xdexLocked >= event.params.amount) {
-        data.xdexLocked = data.xdexLocked.minus(event.params.amount);
-    }
-    data.xdexWithdrawed = data.xdexWithdrawed.plus(event.params.amount);
+    let dealAmount = convertTokenToDecimal(event.params.amount, token.decimals);
+    data.locked = data.locked.minus(dealAmount);
+    data.withdrawed = data.withdrawed.plus(dealAmount);
     data.save();
 
     addStreamTransaction("WithdrawFromStream", event, streamId);
@@ -120,19 +122,13 @@ export function handleStreamCanceled(event: StreamCanceled): void {
     stream.cancellation = streamId;
     stream.save();
 
+    let token = createToken(Address.fromString(stream.token));
     //update total stat
+    let StreamTotalDataId = stream.token;
     let data = StreamTotalData.load(StreamTotalDataId);
-    if (data === null) {
-        data = new StreamTotalData(StreamTotalDataId);
-        data.totalCount = event.params.streamId;
-        data.xdexLocked = BigInt.fromI32(0);
-        data.xdexWithdrawed = BigInt.fromI32(0);
-    } else {
-        if (data.xdexLocked >= event.params.senderBalance) {
-            data.xdexLocked = data.xdexLocked.minus(event.params.senderBalance);
-        }
-        data.xdexWithdrawed = data.xdexWithdrawed.plus(event.params.recipientBalance);
-    }
+
+    data.locked = data.locked.minus(convertTokenToDecimal(event.params.senderBalance,token.decimals));
+    data.withdrawed = data.withdrawed.plus(convertTokenToDecimal(event.params.recipientBalance,token.decimals));
     data.save();
 
     addStreamTransaction("CancelStream", event, streamId);
