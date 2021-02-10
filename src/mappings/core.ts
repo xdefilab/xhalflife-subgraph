@@ -1,4 +1,4 @@
-import {BigInt, BigDecimal, Address} from "@graphprotocol/graph-ts/index"
+import { BigInt, BigDecimal, Address } from "@graphprotocol/graph-ts/index"
 import {
     Contract,
     StreamCanceled,
@@ -6,9 +6,10 @@ import {
     StreamFunded,
     WithdrawFromStream
 } from "../types/Contract/Contract"
-import {Cancellation, Stream, Withdrawal, Fund, StreamTotalData} from "../types/schema"
-import {addStreamTransaction} from "./transactions";
-import {createToken, ZERO_BD, ZERO_BI, ONE_BI, convertTokenToDecimal} from "./helpers";
+import { Cancellation, Stream, Withdrawal, Fund, StreamTotalData } from "../types/schema"
+import { addStreamTransaction } from "./transactions";
+import { createToken, ZERO_BD, ZERO_BI, ONE_BI, convertTokenToDecimal } from "./helpers";
+import { log } from '@graphprotocol/graph-ts'
 
 export function handleStreamCreated(event: StreamCreated): void {
 
@@ -52,6 +53,8 @@ export function handleStreamFunded(event: StreamFunded): void {
     if (stream == null) {
         return;
     }
+    stream.depositAmount += event.params.amount;
+    stream.save();
 
     let token = createToken(Address.fromString(stream.token));
 
@@ -126,9 +129,8 @@ export function handleStreamCanceled(event: StreamCanceled): void {
     //update total stat
     let StreamTotalDataId = stream.token;
     let data = StreamTotalData.load(StreamTotalDataId);
-
-    data.locked = data.locked.minus(convertTokenToDecimal(event.params.senderBalance,token.decimals));
-    data.withdrawed = data.withdrawed.plus(convertTokenToDecimal(event.params.recipientBalance,token.decimals));
+    data.locked = data.locked.minus(convertTokenToDecimal(event.params.senderBalance, token.decimals));
+    data.withdrawed = data.withdrawed.plus(convertTokenToDecimal(event.params.recipientBalance, token.decimals));
     data.save();
 
     addStreamTransaction("CancelStream", event, streamId);
