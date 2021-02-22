@@ -31,6 +31,7 @@ type Cancellation @entity {
 # @derivedFrom makes it possible to map large sets of data to the same stream
 type Stream @entity {
   id: ID!
+  idBigInt: BigInt!
   cancellation: Cancellation
   depositAmount: BigInt!
   recipient: Bytes!

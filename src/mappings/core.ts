@@ -18,6 +18,7 @@ export function handleStreamCreated(event: StreamCreated): void {
     /* Create the stream object */
     let streamId = event.params.streamId.toString();
     let stream = new Stream(streamId);
+    stream.idBigInt = event.params.streamId;
     stream.depositAmount = event.params.depositAmount;
     stream.recipient = event.params.recipient;
     stream.sender = event.params.sender;
