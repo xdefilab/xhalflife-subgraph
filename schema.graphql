@@ -39,6 +39,7 @@ type Stream @entity {
   startBlock: BigInt!
   kBlock: BigInt!
   unlockRatio: BigInt!
+  cancelable: Boolean!
   timestamp: BigInt!
   token: Token
   # Do not turn these arrays into forcibly non-null by adding a "!"

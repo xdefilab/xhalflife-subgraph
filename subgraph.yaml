@@ -32,7 +32,7 @@ dataSources:
       eventHandlers:
         - event: StreamCanceled(indexed uint256,indexed address,indexed address,uint256,uint256)
           handler: handleStreamCanceled
-        - event: StreamCreated(indexed uint256,indexed address,indexed address,address,uint256,uint256,uint256,uint256)
+        - event: StreamCreated(indexed uint256,indexed address,indexed address,address,uint256,uint256,uint256,uint256,bool)
           handler: handleStreamCreated
         - event: StreamFunded(indexed uint256,uint256)
           handler: handleStreamFunded

@@ -27,6 +27,7 @@ export function handleStreamCreated(event: StreamCreated): void {
     stream.unlockRatio = event.params.unlockRatio;
     stream.timestamp = event.block.timestamp;
     stream.token = event.params.token.toHexString();
+    stream.cancelable = event.params.cancelable;
     stream.save();
 
     //update total stat
