@@ -12,7 +12,9 @@
 
 graph init --from-contract 0x97721b4c8BF7AEDf936AF11D18e2f1eF5AF4836B --network kovan --abi build/XHalfLife.json  xdefilab/xhalflifesubgraph
 
-yarn codegen
+`rm -rf build && rm -rf src/types`
+
+`yarn codegen && yarn build`
 
 ## Query
 
