@@ -46,7 +46,6 @@ export function handleStreamCreated(event: StreamCreated): void {
 
     /* Create adjacent but important objects */
     addStreamTransaction("CreateStream", event, streamId);
-    //addToken(event.params.tokenAddress.toHex());
 }
 
 export function handleStreamFunded(event: StreamFunded): void {
@@ -99,8 +98,7 @@ export function handleWithdrawFromStream(event: WithdrawFromStream): void {
 
     let token = createToken(Address.fromString(stream.token));
     //update total stat
-    let StreamTotalDataId = stream.token;
-    let data = StreamTotalData.load(StreamTotalDataId);
+    let data = StreamTotalData.load(stream.token);
     let dealAmount = convertTokenToDecimal(event.params.amount, token.decimals);
     data.locked = data.locked.minus(dealAmount);
     data.withdrawed = data.withdrawed.plus(dealAmount);
@@ -129,8 +127,7 @@ export function handleStreamCanceled(event: StreamCanceled): void {
 
     let token = createToken(Address.fromString(stream.token));
     //update total stat
-    let StreamTotalDataId = stream.token;
-    let data = StreamTotalData.load(StreamTotalDataId);
+    let data = StreamTotalData.load(stream.token);
     data.locked = data.locked.minus(convertTokenToDecimal(event.params.senderBalance, token.decimals));
     data.withdrawed = data.withdrawed.plus(convertTokenToDecimal(event.params.recipientBalance, token.decimals));
     data.save();

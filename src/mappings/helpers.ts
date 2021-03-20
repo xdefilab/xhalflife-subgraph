@@ -1,8 +1,8 @@
 /* eslint-disable prefer-const */
-import {log, BigInt, BigDecimal, Address, ethereum} from '@graphprotocol/graph-ts/index'
-import {ERC20} from "../types/Contract/ERC20"
-import {ERC20NameBytes} from "../types/Contract/ERC20NameBytes"
-import {ERC20SymbolBytes} from "../types/Contract/ERC20SymbolBytes"
+import { log, BigInt, BigDecimal, Address, ethereum } from '@graphprotocol/graph-ts/index'
+import { ERC20 } from "../types/Contract/ERC20"
+import { ERC20NameBytes } from "../types/Contract/ERC20NameBytes"
+import { ERC20SymbolBytes } from "../types/Contract/ERC20SymbolBytes"
 import {
     Token
 } from '../types/schema'
@@ -124,6 +124,8 @@ export function fetchTokenTotalSupply(tokenAddress: Address): BigInt {
     let totalSupplyResult = contract.try_totalSupply()
     if (!totalSupplyResult.reverted) {
         totalSupplyValue = totalSupplyResult as i32
+    } else {
+        log.info('mybug the totalSupply on token {} was null', [tokenAddress.toHexString()]);
     }
     return BigInt.fromI32(totalSupplyValue as i32)
 }
@@ -131,7 +133,7 @@ export function fetchTokenTotalSupply(tokenAddress: Address): BigInt {
 export function fetchTokenDecimals(tokenAddress: Address): BigInt {
     // hardcode overrides
     if (tokenAddress.toHexString() == '0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9') {
-        return BigInt.fromI32(18)
+        return BigInt.fromI32(18) //'Aave Token'
     }
     if (tokenAddress.toHexString() == ETH_ADDRESS) {
         return BigInt.fromI32(18)
@@ -148,7 +150,6 @@ export function fetchTokenDecimals(tokenAddress: Address): BigInt {
 }
 
 export function createToken(address: Address): Token {
-
     let token = Token.load(address.toHexString());
     if (token == null) {
         if (address.toHexString() == ETH_ADDRESS) {
@@ -159,7 +160,7 @@ export function createToken(address: Address): Token {
 
             let decimals = fetchTokenDecimals(address);
             if (decimals === null) {
-                log.debug('mybug the decimal on token 0 was null', []);
+                log.info('mybug the decimal on token {} was null', [address.toHexString()]);
             }
             token.decimals = decimals;
 
@@ -171,7 +172,7 @@ export function createToken(address: Address): Token {
 
             let decimals = fetchTokenDecimals(address);
             if (decimals === null) {
-                log.debug('mybug the decimal on token 0 was null', []);
+                log.info('mybug the decimal on token {} was null', [address.toHexString()]);
             }
             token.decimals = decimals;
 
@@ -179,6 +180,8 @@ export function createToken(address: Address): Token {
         token.save();
 
     }
+    token.totalSupply = fetchTokenTotalSupply(address);
+    token.save();
     return token as Token;
 }
 
